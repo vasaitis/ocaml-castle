@@ -4,7 +4,7 @@ SOURCES = fSTypes2.ml castle_c.c castle.ml
 RESULT  = castle
 THREADS = yes
 CLIBS = castle
-PACKS = acunu_utils
+PACKS = 
 
 LIBINSTALL_FILES = \
 	fSTypes2.cmi \

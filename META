@@ -1,5 +1,4 @@
 version = "0.1"
 description = "Acunu Castle FS bindings"
-requires = "acunu_utils"
 archive(byte) = "castle.cma"
 archive(native) = "castle.cmxa"
