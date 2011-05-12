@@ -523,6 +523,7 @@ CAMLprim value caml_castle_get_slice(value connection, value collection, value f
 #define CAML_VAL_size Int_val
 #define CAML_VAL_string String_val
 #define CAML_VAL_int32 Int32_val
+#define CAML_VAL_da_id_t Int32_val
 
 #define CAML_COPY_slave_uuid caml_copy_int32
 #define CAML_COPY_collection_id caml_copy_int32
@@ -530,6 +531,7 @@ CAMLprim value caml_castle_get_slice(value connection, value collection, value f
 #define CAML_COPY_uint32 caml_copy_int32
 #define CAML_COPY_string caml_copy_string
 #define CAML_COPY_int32 caml_copy_int32
+#define CAML_COPY_da_id_t caml_copy_int32
 
 #define CASTLE_IOCTL_0IN_0OUT(_id, _name)                                           \
 CAMLprim void                                                                       \

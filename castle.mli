@@ -38,7 +38,8 @@ val attach_dev : connection -> version:FSTypes2.version_id -> string
 val detach : connection -> device:int32 -> unit
 val detach_dev : connection -> device:string -> unit
 val create : connection -> size:int64 -> int32
-val destroy : connection -> version:int32 -> flag:FSTypes2.destroy_flag -> unit
+val destroy_vertree : connection -> vertree:int32 -> unit
+val delete_version : connection -> version:int32 -> unit
 val clone : connection -> version:int32 -> int32
 val snapshot : connection -> device:int32 -> int32
 val snapshot_dev : connection -> device:string -> int32
