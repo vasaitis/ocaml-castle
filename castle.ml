@@ -30,6 +30,7 @@ external castle_collection_snapshot             : connection -> int32 -> int32 =
 external castle_create                          : connection -> int64 -> int32 = "caml_castle_create"
 external castle_delete_version                  : connection -> int32 -> unit = "caml_castle_delete_version"
 external castle_destroy_vertree                 : connection -> int32 -> unit = "caml_castle_destroy_vertree"
+external castle_vertree_compact                 : connection -> int32 -> unit = "caml_castle_vertree_compact"
 external castle_clone                           : connection -> int32 -> int32 = "caml_castle_clone"
 external castle_init                            : connection -> unit = "caml_castle_init"
 external castle_fault                           : connection -> int32 -> int32 -> unit = "caml_castle_fault"
@@ -92,6 +93,7 @@ let detach_dev connection ~(device:string) = castle_detach connection (castle_de
 let create connection ~size = castle_create connection size
 
 let destroy_vertree connection ~vertree = castle_destroy_vertree connection vertree
+let vertree_compact connection ~vertree = castle_vertree_compact connection vertree
 let delete_version connection ~version = castle_delete_version connection version
 let fault   connection ~(fault_id:int32) ~(fault_arg :int32)= castle_fault connection fault_id fault_arg
 
