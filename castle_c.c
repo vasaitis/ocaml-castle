@@ -680,11 +680,11 @@ caml_castle_collection_attach (value connection, value version_v, value name_v)
         castle_connection *conn;
         int ret;
 
-        version_t version = Int32_val(version_v);
+        c_ver_t version = Int32_val(version_v);
         size_t name_len = caml_string_length(name_v) + 1;
         char *name = malloc(name_len);
 
-        collection_id_t collection;
+        c_collection_id_t collection;
 
         assert(Is_block(connection) && Tag_val(connection) == Custom_tag);
         conn = Castle_val(connection);
