@@ -32,7 +32,6 @@ val iter_replace_last :
 val iter_finish : connection -> FSTypes2.iter_token -> unit
 val claim : connection -> device:int32 -> int32
 val claim_dev : connection -> device:string -> int32
-val release : connection -> disk:int32 -> unit
 val attach : connection -> version:FSTypes2.version_id -> int32
 val attach_dev : connection -> version:FSTypes2.version_id -> string
 val detach : connection -> device:int32 -> unit

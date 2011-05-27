@@ -20,7 +20,6 @@ external castle_get_slice : connection -> int32 -> string array -> string array 
 
 (* Control Path *)
 external castle_claim                           : connection -> int32 -> int32 = "caml_castle_claim"
-external castle_release                         : connection -> int32 -> unit = "caml_castle_release"
 external castle_attach                          : connection -> int32 -> int32 = "caml_castle_attach"
 external castle_detach                          : connection -> int32 -> unit = "caml_castle_detach"
 external castle_snapshot                        : connection -> int32 -> int32 = "caml_castle_snapshot"
@@ -80,8 +79,6 @@ let iter_replace_last connection t i v = failwith nimsg
 
 let claim connection ~device = castle_claim connection device
 let claim_dev connection ~device = castle_claim connection (castle_device_to_devno device)
-
-let release connection ~(disk:int32) = castle_release connection disk
 
 (* get a device id for the given version. *)
 let attach connection ~version = castle_attach connection version
