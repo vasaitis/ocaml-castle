@@ -728,3 +728,15 @@ caml_castle_environment_set(value connection, value val_id, value data_v) {
 
   CAMLreturn0;
 }
+
+CAMLprim value
+caml_castle_fd(value connection) {
+  CAMLparam1(connection);
+  castle_connection *conn;
+
+  assert(Is_block(connection) && Tag_val(connection) == Custom_tag);
+  conn = Castle_val(connection);
+
+  int fd = castle_fd(conn);
+  CAMLreturn(Val_int(fd));
+}

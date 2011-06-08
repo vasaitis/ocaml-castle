@@ -9,6 +9,8 @@ external castle_disconnect : connection -> unit = "caml_castle_disconnect"
 external castle_device_to_devno : string -> int32 = "caml_castle_device_to_devno"
 external castle_devno_to_device : int32 -> string = "caml_castle_devno_to_device"
 
+external castle_fd : connection -> file_descr = "caml_castle_fd"
+
 (* Data path *)
 external castle_get : connection -> int32 -> string array -> string = "caml_castle_get"
 external castle_replace : connection -> int32 -> string array -> string -> unit = "caml_castle_replace"
@@ -43,6 +45,8 @@ let connect _ _ _ =
 
 let disconnect connection = 
         castle_disconnect connection
+
+let connection_fd conn = castle_fd conn
 
 exception Invalid_reply of string
 exception Invalid_iterator

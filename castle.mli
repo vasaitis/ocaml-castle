@@ -1,6 +1,7 @@
 type connection
 val connect : string -> int -> int -> connection
 val disconnect : connection -> unit
+val connection_fd : connection -> Unix.file_descr
 exception Invalid_reply of string
 exception Invalid_iterator
 val lib_init : unit -> unit
