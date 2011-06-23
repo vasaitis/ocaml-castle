@@ -49,14 +49,19 @@ struct custom_operations castle_ops = {
 };
 
 // TODO use length to make sure we don't overrun
-static void copy_ocaml_key_to_buffer(value key_value, void *buffer, uint32_t length)
+#define EMPTY_MEANS_NEGATIVE_INFINITY (-1)
+#define EMPTY_MEANS_POSITIVE_INFINITY (1)
+#define EMPTY_MEANS_EMPTY (0)
+static void copy_ocaml_key_to_buffer(value key_value, void *buffer, uint32_t length, int empty_means)
 {
     CAMLparam1(key_value);
     CAMLlocal1(subkey_value);
 
     uint32_t i;
     uint32_t dims = Wosize_val(key_value);
+    int dim_len;
     int lens[dims];
+    uint8_t flags[dims];
     const uint8_t *keys[dims];
     uint32_t r;
 
@@ -67,11 +72,20 @@ static void copy_ocaml_key_to_buffer(value key_value, void *buffer, uint32_t len
       subkey_value = Field(key_value, i);
 
       assert(Is_block(subkey_value) && Tag_val(subkey_value) == String_tag);
-      lens[i] = caml_string_length(subkey_value);
-      keys[i] = (const uint8_t *)String_val(subkey_value);
+      dim_len = lens[i]  = caml_string_length(subkey_value);
+
+      if (dim_len == 0 && empty_means == EMPTY_MEANS_NEGATIVE_INFINITY) {
+          flags[i] = KEY_DIMENSION_MINUS_INFINITY_FLAG;
+      } else if (dim_len == 0 && empty_means == EMPTY_MEANS_POSITIVE_INFINITY) {
+          flags[i] = KEY_DIMENSION_PLUS_INFINITY_FLAG;
+      } else {
+          flags[i] = 0;    
+      }
+      
+      keys[i]  = (const uint8_t *)String_val(subkey_value);
     }
 
-    r = castle_build_key(buffer, length, dims, lens, keys);
+    r = castle_build_key(buffer, length, dims, lens, keys, flags);
 
     CAMLreturn0;
 }
@@ -96,7 +110,7 @@ static void get_key_length(value key, uint32_t *length_out)
       lens[i] = caml_string_length(subkey_value);
     }
 
-    r = castle_key_bytes_needed(dims, lens, NULL);
+    r = castle_key_bytes_needed(dims, lens, NULL, NULL);
     *length_out = r;
 
     CAMLreturn0;
@@ -162,7 +176,7 @@ CAMLprim value caml_castle_get(value connection, value collection, value key_val
     get_key_length(key_value, &key_len);
     key = malloc(key_len);
     if (!key) caml_failwith("Error allocating key");
-    copy_ocaml_key_to_buffer(key_value, key, key_len);
+    copy_ocaml_key_to_buffer(key_value, key, key_len, EMPTY_MEANS_EMPTY);
 
     enter_blocking_section();
     ret = castle_get(conn, collection_id, key, &val, &val_len);
@@ -228,7 +242,7 @@ CAMLprim void caml_castle_replace(value connection, value collection, value key_
 
     key = buf;
     val = buf + key_len;
-    copy_ocaml_key_to_buffer(key_value, key, key_len);
+    copy_ocaml_key_to_buffer(key_value, key, key_len, EMPTY_MEANS_EMPTY);
     memcpy(val, String_val(val_value), val_len);
 
     enter_blocking_section();
@@ -269,7 +283,7 @@ CAMLprim void caml_castle_remove(value connection, value collection, value key_v
         caml_failwith("Could not alloc buffer.");
     }
 
-    copy_ocaml_key_to_buffer(key_value, key, key_len);
+    copy_ocaml_key_to_buffer(key_value, key, key_len, EMPTY_MEANS_EMPTY);
 
     enter_blocking_section();
     ret = castle_remove(conn, collection_id, key);
@@ -313,8 +327,8 @@ CAMLprim value caml_castle_iter_start(value connection, value collection, value 
         caml_failwith("Could not alloc buffer.");
     }
 
-    copy_ocaml_key_to_buffer(start_key, start_key_buf, start_key_len);
-    copy_ocaml_key_to_buffer(end_key, end_key_buf, end_key_len);
+    copy_ocaml_key_to_buffer(start_key, start_key_buf, start_key_len, EMPTY_MEANS_NEGATIVE_INFINITY);
+    copy_ocaml_key_to_buffer(end_key, end_key_buf, end_key_len, EMPTY_MEANS_POSITIVE_INFINITY);
 
     enter_blocking_section();
     ret = castle_iter_start(conn, collection_id, start_key_buf, end_key_buf, &token);
@@ -333,27 +347,31 @@ CAMLprim value caml_castle_iter_start(value connection, value collection, value 
     CAMLreturn(token_out);
 }
 
-static value castle_okey_to_ocaml(castle_key *key)
+static value castle_key_to_ocaml(castle_key *key)
 {
     CAMLparam0();
     CAMLlocal2(ocaml_key, ocaml_key_dim);
     uint32_t i;
+    uint32_t dimension_length;
+    const uint8_t *dimension;
 
     if (key->nr_dims == 0)
       CAMLreturn(Atom(0));
 
     ocaml_key = caml_alloc(key->nr_dims, 0);
 
-    for (i = 0; i < key->nr_dims; i++)
+    for (i = 0; i < castle_key_dims(key); i++)
     {
-      if (key->dims[i]->length == 0)
-        Store_field(ocaml_key, i, Atom(String_tag));
-      else {
-        ocaml_key_dim = caml_alloc_string(key->dims[i]->length);
-        memcpy(String_val(ocaml_key_dim), key->dims[i]->key, key->dims[i]->length);
-
-        Store_field(ocaml_key, i, ocaml_key_dim);
-      }
+        dimension_length = castle_key_elem_len(key, i);
+        dimension = castle_key_elem_data(key, i);
+        
+        if (dimension_length == 0)
+            Store_field(ocaml_key, i, Atom(String_tag));
+        else {
+            ocaml_key_dim = caml_alloc_string(dimension_length);
+            memcpy(String_val(ocaml_key_dim), dimension, dimension_length);
+            Store_field(ocaml_key, i, ocaml_key_dim);
+        }
     }
 
     CAMLreturn(ocaml_key);
@@ -386,7 +404,7 @@ static value castle_kv_list_to_ocaml(struct castle_key_value_list *kv_list)
     while (kv_list != NULL)
     {
         kv_tuple = caml_alloc(2, 0);
-        Store_field(kv_tuple, 0, castle_okey_to_ocaml(kv_list->key));
+        Store_field(kv_tuple, 0, castle_key_to_ocaml(kv_list->key));
         if (kv_list->val->length == 0)
           Store_field(kv_tuple, 1, Atom(String_tag));
         else {
@@ -489,8 +507,8 @@ CAMLprim value caml_castle_get_slice(value connection, value collection, value f
     if (!buf) caml_failwith("Error allocating key");
     from_key = buf;
     to_key = buf + from_key_len;
-    copy_ocaml_key_to_buffer(from_key_value, from_key, from_key_len);
-    copy_ocaml_key_to_buffer(to_key_value, to_key, to_key_len);
+    copy_ocaml_key_to_buffer(from_key_value, from_key, from_key_len, EMPTY_MEANS_EMPTY);
+    copy_ocaml_key_to_buffer(to_key_value, to_key, to_key_len, EMPTY_MEANS_EMPTY);
 
     enter_blocking_section();
     ret = castle_getslice(conn, collection_id, from_key,
