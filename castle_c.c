@@ -507,8 +507,8 @@ CAMLprim value caml_castle_get_slice(value connection, value collection, value f
     if (!buf) caml_failwith("Error allocating key");
     from_key = buf;
     to_key = buf + from_key_len;
-    copy_ocaml_key_to_buffer(from_key_value, from_key, from_key_len, EMPTY_MEANS_EMPTY);
-    copy_ocaml_key_to_buffer(to_key_value, to_key, to_key_len, EMPTY_MEANS_EMPTY);
+    copy_ocaml_key_to_buffer(from_key_value, from_key, from_key_len, EMPTY_MEANS_NEGATIVE_INFINITY);
+    copy_ocaml_key_to_buffer(to_key_value, to_key, to_key_len, EMPTY_MEANS_POSITIVE_INFINITY);
 
     enter_blocking_section();
     ret = castle_getslice(conn, collection_id, from_key,
