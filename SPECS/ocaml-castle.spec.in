@@ -1,13 +1,15 @@
+%if !%{release}
+%define release 1
+%endif
+
 Summary: OCaml bindings for libcastle
 Name: ocaml-castle
-Version:        %{buildver}
-Release:        %{buildrev}
+Version:        @@SOURCEVER@@
+Release:        %{release}
 License: MIT
 Group: Filesystem
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-
-Provides:       %{name}-%{changesetver}
 
 BuildRequires: libcastle-devel
 BuildRequires: ocaml-utils
@@ -21,7 +23,7 @@ BuildRequires: ocaml-findlib
 OCaml Castle package
 
 %prep
-%setup -q -n %{name}
+%setup -q -n %{name}-%{version}
 
 %build
 make all
@@ -43,5 +45,5 @@ rm -rf %{buildroot}
 %{_libdir}/ocaml/castle/
 
 %changelog
-* Wed Sep  8 2010 Andrew Suffield <asuffield@acunu.com> - %{buildver}-%{buildrev}
+* Wed Sep  8 2010 Andrew Suffield <asuffield@acunu.com> - @@SOURCEVER@@
 - Initial package
