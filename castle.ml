@@ -15,8 +15,8 @@ external castle_fd : connection -> file_descr = "caml_castle_fd"
 external castle_get : connection -> int32 -> string array -> string = "caml_castle_get"
 external castle_replace : connection -> int32 -> string array -> string -> unit = "caml_castle_replace"
 external castle_remove : connection -> int32 -> string array -> unit = "caml_castle_remove"
-external castle_iter_start : connection -> int32 -> string array -> string array -> int32 = "caml_castle_iter_start"
-external castle_iter_next : connection -> int32 -> int -> (string array * string) array = "caml_castle_iter_next"
+external castle_iter_start : connection -> int32 -> string array -> string array -> int -> int32 * bool * ((string array * string) array) = "caml_castle_iter_start"
+external castle_iter_next : connection -> int32 -> int -> bool * ((string array * string) array) = "caml_castle_iter_next"
 external castle_iter_finish : connection -> int32 -> unit = "caml_castle_iter_finish"
 external castle_get_slice : connection -> int32 -> string array -> string array -> int -> (string array * string) array = "caml_castle_get_slice"
 
@@ -65,8 +65,12 @@ let remove conn c k = castle_remove conn c k
 
 let replace conn c k v = castle_replace conn c k v
 
-let iter_start connection c start finish = castle_iter_start connection c start finish
-let iter_next connection t batch_size = Array.map (fun (k,v) -> (k, Value v)) (castle_iter_next connection t batch_size)
+let iter_start connection c start finish batch_size = 
+	let token, more, arr = castle_iter_start connection c start finish batch_size in
+		(token, more, Array.map (fun (k,v) -> (k, Value v)) arr)
+let iter_next connection t batch_size = 
+	let more, arr = castle_iter_next connection t batch_size in
+		(more, Array.map (fun (k,v) -> (k, Value v)) arr)
 let iter_finish connection t = castle_iter_finish connection t
 (* 'limit' means the maximum number of values to return. 0 means unlimited. *)
 let get_slice connection c start finish limit = Array.map (fun (k,v) -> (k, Value v)) (castle_get_slice connection c start finish limit)

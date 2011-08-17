@@ -22,12 +22,13 @@ val iter_start :
   FSTypes2.collection_id ->
   FSTypes2.obj_key ->
   FSTypes2.obj_key ->
-  FSTypes2.iter_token
+  int ->
+  FSTypes2.iter_token * bool * ((FSTypes2.obj_key * FSTypes2.obj_value) array)
 val iter_next :
   connection ->
   FSTypes2.iter_token ->
   int ->
-  (FSTypes2.obj_key * FSTypes2.obj_value) array
+  bool * ((FSTypes2.obj_key * FSTypes2.obj_value) array)
 val iter_replace_last :
   connection -> FSTypes2.iter_token -> FSTypes2.iter_index -> string -> unit
 val iter_finish : connection -> FSTypes2.iter_token -> unit

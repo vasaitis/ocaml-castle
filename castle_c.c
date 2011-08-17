@@ -298,55 +298,6 @@ CAMLprim void caml_castle_remove(value connection, value collection, value key_v
     CAMLreturn0;
 }
 
-CAMLprim value caml_castle_iter_start(value connection, value collection, value start_key, value end_key)
-{
-    CAMLparam4(connection, collection, start_key, end_key);
-    CAMLlocal1(token_out);
-
-    int ret;
-    uint32_t start_key_len, end_key_len, collection_id;
-    void *start_key_buf, *end_key_buf;
-    castle_connection *conn;
-    castle_interface_token_t token;
-
-    debug("fs_iter_start entered\n");
-
-    assert(Is_block(connection) && Tag_val(connection) == Custom_tag);
-    conn = Castle_val(connection);
-
-    collection_id = Int32_val(collection);
-
-    get_key_length(start_key, &start_key_len);
-    get_key_length(end_key, &end_key_len);
-
-    start_key_buf = malloc(start_key_len);
-    end_key_buf = malloc(end_key_len);
-    if (!start_key_buf || !end_key_buf)
-    {
-        debug("Could not alloc buffer.\n");
-        caml_failwith("Could not alloc buffer.");
-    }
-
-    copy_ocaml_key_to_buffer(start_key, start_key_buf, start_key_len, EMPTY_MEANS_NEGATIVE_INFINITY);
-    copy_ocaml_key_to_buffer(end_key, end_key_buf, end_key_len, EMPTY_MEANS_POSITIVE_INFINITY);
-
-    enter_blocking_section();
-    ret = castle_iter_start(conn, collection_id, start_key_buf, end_key_buf, &token);
-    leave_blocking_section();
-
-    free(start_key_buf);
-    free(end_key_buf);
-
-    if (ret)
-        unix_error(-ret, "iter_start", Nothing);
-
-    token_out = caml_copy_int32(token);
-
-    debug("fs_iter_start exiting\n");
-
-    CAMLreturn(token_out);
-}
-
 static value castle_key_to_ocaml(castle_key *key)
 {
     CAMLparam0();
@@ -364,7 +315,7 @@ static value castle_key_to_ocaml(castle_key *key)
     {
         dimension_length = castle_key_elem_len(key, i);
         dimension = castle_key_elem_data(key, i);
-        
+
         if (dimension_length == 0)
             Store_field(ocaml_key, i, Atom(String_tag));
         else {
@@ -387,7 +338,7 @@ static value castle_kv_list_to_ocaml(struct castle_key_value_list *kv_list)
 
     /* find number of kv pairs */
     cur_kv_list = kv_list;
-    while (cur_kv_list != NULL)
+    while (cur_kv_list)
     {
         key_count++;
         cur_kv_list = cur_kv_list->next;
@@ -401,7 +352,7 @@ static value castle_kv_list_to_ocaml(struct castle_key_value_list *kv_list)
     arr = caml_alloc(key_count, 0);
 
     /* insert items into array */
-    while (kv_list != NULL)
+    while (kv_list)
     {
         kv_tuple = caml_alloc(2, 0);
         Store_field(kv_tuple, 0, castle_key_to_ocaml(kv_list->key));
@@ -423,12 +374,75 @@ static value castle_kv_list_to_ocaml(struct castle_key_value_list *kv_list)
     CAMLreturn(arr);
 }
 
+CAMLprim value caml_castle_iter_start(value connection, value collection, value start_key, value end_key, value size)
+{
+    CAMLparam5(connection, collection, start_key, end_key, size);
+    CAMLlocal3(token_out, arr, ret_tuple);
+
+    int ret, more;
+    uint32_t start_key_len, end_key_len, collection_id, buf_length;
+    void *start_key_buf, *end_key_buf;
+    struct castle_key_value_list *kv_list;
+    castle_connection *conn;
+    castle_interface_token_t token;
+
+    debug("fs_iter_start entered\n");
+
+    assert(Is_block(connection) && Tag_val(connection) == Custom_tag);
+    conn = Castle_val(connection);
+
+    buf_length = Int_val(size);
+    collection_id = Int32_val(collection);
+
+    get_key_length(start_key, &start_key_len);
+    get_key_length(end_key, &end_key_len);
+
+    start_key_buf = malloc(start_key_len);
+    end_key_buf = malloc(end_key_len);
+    if (!start_key_buf || !end_key_buf)
+    {
+        debug("Could not alloc buffer.\n");
+        caml_failwith("Could not alloc buffer.");
+    }
+
+    copy_ocaml_key_to_buffer(start_key, start_key_buf, start_key_len, EMPTY_MEANS_NEGATIVE_INFINITY);
+    copy_ocaml_key_to_buffer(end_key, end_key_buf, end_key_len, EMPTY_MEANS_POSITIVE_INFINITY);
+
+    enter_blocking_section();
+    ret = castle_iter_start(conn,
+                            collection_id,
+                            start_key_buf,
+                            end_key_buf,
+                            &token,
+                            &kv_list,
+                            buf_length,
+                            &more);
+    leave_blocking_section();
+
+    free(start_key_buf);
+    free(end_key_buf);
+
+    if (ret)
+        unix_error(-ret, "iter_start", Nothing);
+
+    ret_tuple = caml_alloc(3, 0);
+    Store_field(ret_tuple, 0, caml_copy_int32(token));
+    Store_field(ret_tuple, 1, more ? Val_int(1) : Val_int(0));
+    Store_field(ret_tuple, 2, castle_kv_list_to_ocaml(kv_list));
+
+    castle_kvs_free(kv_list);
+
+    debug("fs_iter_start exiting\n");
+
+    CAMLreturn(ret_tuple);
+}
+
 CAMLprim value caml_castle_iter_next(value connection, value token, value size)
 {
     CAMLparam3(connection, token, size);
-    CAMLlocal1(arr);
+    CAMLlocal2(arr, ret_tuple);
 
-    int ret;
+    int ret, more;
     uint32_t buf_length;
 
     castle_interface_token_t token_id;
@@ -444,7 +458,7 @@ CAMLprim value caml_castle_iter_next(value connection, value token, value size)
     token_id = Int32_val(token);
 
     enter_blocking_section();
-    ret = castle_iter_next(conn, token_id, &kv_list, buf_length);
+    ret = castle_iter_next(conn, token_id, &kv_list, buf_length, &more);
     leave_blocking_section();
     if (ret)
     {
@@ -453,9 +467,13 @@ CAMLprim value caml_castle_iter_next(value connection, value token, value size)
     arr = castle_kv_list_to_ocaml(kv_list);
     castle_kvs_free(kv_list);
 
+    ret_tuple = caml_alloc(2, 0);
+    Store_field(ret_tuple, 0, more ? Val_int(1) : Val_int(0));
+    Store_field(ret_tuple, 1, arr);
+
     debug("fs_iter_next exiting\n");
 
-    CAMLreturn(arr);
+    CAMLreturn(ret_tuple);
 }
 
 CAMLprim void caml_castle_iter_finish(value connection, value token)
