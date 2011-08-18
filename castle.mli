@@ -50,6 +50,8 @@ val transfer_create : connection -> version:int32 -> disk:int32 -> int32
 val transfer_destroy : connection -> transfer:int32 -> unit
 val collection_attach :
   connection -> version:int32 -> name:FSTypes2.obj_collection -> int32
+val collection_reattach :
+  connection -> collection:int32 -> new_version:int32 -> int32
 val collection_detach : connection -> collection:int32 -> unit
 val collection_take_snapshot : connection -> collection:int32 -> int32
 val environment_set : connection -> FSTypes2.environment_var_id -> string -> unit
