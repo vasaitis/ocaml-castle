@@ -26,6 +26,7 @@ external castle_attach                          : connection -> int32 -> int32 =
 external castle_detach                          : connection -> int32 -> unit = "caml_castle_detach"
 external castle_snapshot                        : connection -> int32 -> int32 = "caml_castle_snapshot"
 external castle_collection_attach               : connection -> int32 -> string -> int -> int32 = "caml_castle_collection_attach"
+external castle_collection_reattach             : connection -> int32 -> int32 -> int32 = "caml_castle_collection_reattach"
 external castle_collection_detach               : connection -> int32 -> unit = "caml_castle_collection_detach"
 external castle_collection_snapshot             : connection -> int32 -> int32 = "caml_castle_collection_snapshot"
 external castle_create                          : connection -> int64 -> int32 = "caml_castle_create"
@@ -119,6 +120,9 @@ let init connection = castle_init connection
 
 let collection_attach connection ~(version:int32) ~name = 
         castle_collection_attach connection version name (String.length name)
+
+let collection_reattach connection ~(collection:int32) ~(new_version:int32) =
+        castle_collection_reattach connection collection new_version
 
 let collection_detach connection ~(collection:int32) = 
         castle_collection_detach connection collection
