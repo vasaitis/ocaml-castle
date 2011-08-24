@@ -7,9 +7,11 @@ Group: Filesystem
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
+BuildRequires: ocaml
 BuildRequires: libcastle-devel
 BuildRequires: ocaml-utils
 BuildRequires: ocaml-findlib
+Requires:      ocaml
 
 %define _use_internal_dependency_generator 0
 %define __find_requires /usr/lib/rpm/ocaml-find-requires.sh
