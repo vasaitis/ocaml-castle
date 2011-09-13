@@ -560,14 +560,22 @@ CAMLprim value caml_castle_get_slice(value connection, value collection, value f
 #define CAML_VAL_string String_val
 #define CAML_VAL_int32 Int32_val
 #define CAML_VAL_da_id_t Int32_val
+#define CAML_VAL_merge_id_t Int32_val
+#define CAML_VAL_thread_id_t Int32_val
+#define CAML_VAL_work_id_t Int32_val
+#define CAML_VAL_work_size_t Int64_val
 
 #define CAML_COPY_slave_uuid caml_copy_int32
 #define CAML_COPY_collection_id caml_copy_int32
 #define CAML_COPY_version caml_copy_int32
 #define CAML_COPY_uint32 caml_copy_int32
-#define CAML_COPY_string caml_copy_string
+#define CAML_COPY_string caml_copy_stri64
 #define CAML_COPY_int32 caml_copy_int32
 #define CAML_COPY_da_id_t caml_copy_int32
+#define CAML_COPY_merge_id_t caml_copy_int32
+#define CAML_COPY_thread_id_t caml_copy_int32
+#define CAML_COPY_work_id_t caml_copy_int32
+#define CAML_COPY_work_size_t caml_copy_int64
 
 #define CASTLE_IOCTL_0IN_0OUT(_id, _name)                                           \
 CAMLprim void                                                                       \
@@ -588,6 +596,31 @@ caml_castle_##_id (value connection)                                            
             unix_error(-ret, #_id, Nothing);                                         \
                                                                                     \
         CAMLreturn0;                                                                \
+}                                                                                   \
+
+#define CASTLE_IOCTL_0IN_1OUT(_id, _name, _ret_1_t, _ret)                           \
+CAMLprim value                                                                      \
+caml_castle_##_id (value connection)                                                \
+{                                                                                   \
+        CAMLparam1(connection);                                                     \
+        CAMLlocal1(result);                                                         \
+        castle_connection *conn;                                                    \
+        int ret;                                                                    \
+        C_TYPE_##_ret_1_t _ret;                                                     \
+                                                                                    \
+        assert(Is_block(connection) && Tag_val(connection) == Custom_tag);          \
+        conn = Castle_val(connection);                                              \
+                                                                                    \
+        enter_blocking_section();                                                   \
+        ret = castle_##_id(conn, &_ret);                                            \
+        leave_blocking_section();                                                   \
+                                                                                    \
+        if (ret)                                                                    \
+            unix_error(-ret, #_id, Nothing);                                        \
+                                                                                    \
+        result = CAML_COPY_##_ret_1_t(_ret);                                        \
+                                                                                    \
+        CAMLreturn(result);                                                         \
 }                                                                                   \
 
 #define CASTLE_IOCTL_1IN_0OUT(_id, _name, _arg_1_t, _arg_1)                         \
@@ -666,6 +699,37 @@ caml_castle_##_id (value connection, value _arg_1##_value, value _arg_2##_value)
             unix_error(-ret, #_id, Nothing);                                         \
                                                                                     \
         CAMLreturn0;                                                                \
+}                                                                                   \
+
+#define CASTLE_IOCTL_2IN_1OUT(_id, _name, _arg_1_t, _arg_1, _arg_2_t, _arg_2,       \
+                              _ret_1_t, _ret)                                       \
+CAMLprim value                                                                      \
+caml_castle_##_id (value connection, value _arg_1##_value, value _arg_2##_value)    \
+{                                                                                   \
+        CAMLparam3(connection, _arg_1##_value, _arg_2##_value);                     \
+        CAMLlocal1(result);                                                         \
+        castle_connection *conn;                                                    \
+        int ret;                                                                    \
+        C_TYPE_##_arg_1_t _arg_1;                                                   \
+        C_TYPE_##_arg_2_t _arg_2;                                                   \
+        C_TYPE_##_ret_1_t _ret;                                                     \
+                                                                                    \
+        assert(Is_block(connection) && Tag_val(connection) == Custom_tag);          \
+        conn = Castle_val(connection);                                              \
+                                                                                    \
+        _arg_1 = CAML_VAL_##_arg_1_t(_arg_1##_value);                               \
+        _arg_2 = CAML_VAL_##_arg_2_t(_arg_2##_value);                               \
+                                                                                    \
+        enter_blocking_section();                                                   \
+        ret = castle_##_id(conn, _arg_1, _arg_2, &_ret);                            \
+        leave_blocking_section();                                                   \
+                                                                                    \
+        if (ret)                                                                    \
+            unix_error(-ret, #_id, Nothing);                                        \
+                                                                                    \
+        result = CAML_COPY_##_ret_1_t(_ret);                                        \
+                                                                                    \
+        CAMLreturn(result);                                                         \
 }                                                                                   \
 
 #define CASTLE_IOCTL_3IN_1OUT(_id, _name, _arg_1_t, _arg_1, _arg_2_t, _arg_2,       \
