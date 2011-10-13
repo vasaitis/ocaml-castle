@@ -554,8 +554,7 @@ CAMLprim value caml_castle_get_slice(value connection, value collection, value f
 #define CAML_VAL_slave_uuid Int32_val
 #define CAML_VAL_collection_id Int32_val
 #define CAML_VAL_version Int32_val
-/* This may not work: don't know whether there are 8bit ints in ocaml. */
-#define CAML_VAL_uint8 Int32_val
+#define CAML_VAL_uint8 Bool_val
 #define CAML_VAL_uint32 Int32_val
 #define CAML_VAL_uint64 Int64_val
 #define CAML_VAL_size Int_val
@@ -579,6 +578,7 @@ CAMLprim value caml_castle_get_slice(value connection, value collection, value f
 #define CAML_COPY_thread_id_t caml_copy_int32
 #define CAML_COPY_work_id_t caml_copy_int32
 #define CAML_COPY_work_size_t caml_copy_int64
+#define CAML_COPY_pid caml_copy_int32
 
 #define CASTLE_IOCTL_0IN_0OUT(_id, _name)                                           \
 CAMLprim void                                                                       \

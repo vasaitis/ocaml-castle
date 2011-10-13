@@ -40,6 +40,7 @@ external castle_environment_set                 : connection -> int32 -> string 
 external castle_slave_evacuate                  : connection -> int32 -> int32 -> unit = "caml_castle_slave_evacuate"
 external castle_slave_scan                      : connection -> int32 -> unit = "caml_castle_slave_scan"
 external castle_thread_priority                 : connection -> int32 -> unit = "caml_castle_thread_priority"
+external castle_ctrl_prog_deregister            : connection -> bool -> int32 = "caml_castle_ctrl_prog_deregister"
 
 let connect _ _ _ =
         castle_connect ()
@@ -106,6 +107,7 @@ let fault   connection ~(fault_id:int32) ~(fault_arg :int32)= castle_fault conne
 let slave_evacuate connection ~(disk:int32) ~(force:int32) = castle_slave_evacuate connection disk force
 let slave_scan    connection ~id = castle_slave_scan connection id
 let thread_priority  connection ~nice_value = castle_thread_priority connection nice_value
+let ctrl_prog_deregister connection ~shutdown = castle_ctrl_prog_deregister connection shutdown
 
 (* Create a child version of the given one, and return the new version id. *)
 let clone connection ~(version:int32) = castle_clone connection version

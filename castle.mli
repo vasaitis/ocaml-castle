@@ -68,3 +68,4 @@ val get_valid_counts :
 val get_invalid_counts :
   connection -> slave:int32 -> (FSTypes2.version_id * int32) array
 val set_target : connection -> slave:int32 -> value:bool -> unit
+val ctrl_prog_deregister : connection -> shutdown:bool -> int32
