@@ -140,12 +140,3 @@ let environment_set connection id data =
   | Hostname -> 3l
   in
   castle_environment_set connection id_n data
-
-(* TODO *)
-let transfer_create connection ~(version:int32) ~(disk:int32) = assert false
-let transfer_destroy connection ~(transfer:int32) = assert false
-let reserve_for_transfer connection ~(version:int32) ~(finished_only:bool) ~(constraints:(int32 * int32) list) = assert false
-let get_valid_counts connection ~(slave:int32) = [| |] (* TODO not with an ioctl... *)
-let get_invalid_counts connection ~(slave:int32) = [| |]
-let set_target connection ~(slave:int32) ~value = assert false
-

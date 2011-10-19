@@ -46,8 +46,6 @@ val clone : connection -> version:int32 -> int32
 val snapshot : connection -> device:int32 -> int32
 val snapshot_dev : connection -> device:string -> int32
 val init : connection -> unit
-val transfer_create : connection -> version:int32 -> disk:int32 -> int32
-val transfer_destroy : connection -> transfer:int32 -> unit
 val collection_attach :
   connection -> version:int32 -> name:FSTypes2.obj_collection -> int32
 val collection_reattach :
@@ -59,13 +57,4 @@ val fault : connection -> fault_id:int32 -> fault_arg:int32 -> unit
 val slave_evacuate : connection -> disk:int32 -> force:int32 -> unit
 val slave_scan : connection -> id:int32 -> unit
 val thread_priority : connection -> nice_value:int32 -> unit
-val reserve_for_transfer :
-  connection ->
-  version:int32 ->
-  finished_only:bool -> constraints:(int32 * int32) list -> unit
-val get_valid_counts :
-  connection -> slave:int32 -> (FSTypes2.version_id * int32) array
-val get_invalid_counts :
-  connection -> slave:int32 -> (FSTypes2.version_id * int32) array
-val set_target : connection -> slave:int32 -> value:bool -> unit
 val ctrl_prog_deregister : connection -> shutdown:bool -> int32
