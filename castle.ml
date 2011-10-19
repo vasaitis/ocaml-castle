@@ -42,7 +42,7 @@ external castle_slave_scan                      : connection -> int32 -> unit = 
 external castle_thread_priority                 : connection -> int32 -> unit = "caml_castle_thread_priority"
 external castle_ctrl_prog_deregister            : connection -> bool -> int32 = "caml_castle_ctrl_prog_deregister"
 
-let connect _ _ _ =
+let connect () =
         castle_connect ()
 
 let disconnect connection = 

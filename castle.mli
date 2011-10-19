@@ -1,5 +1,5 @@
 type connection
-val connect : string -> int -> int -> connection
+val connect : unit -> connection
 val disconnect : connection -> unit
 val connection_fd : connection -> Unix.file_descr
 exception Invalid_reply of string
