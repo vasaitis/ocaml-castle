@@ -17,7 +17,8 @@ type rda_type =
 
 type merge_cfg = {
     m_arrays: int32 list;
-    m_data_exts: int64 list;
+    (* 'None' means merge all data extents (i.e. we pass -1 to Castle). *)
+    m_data_exts: int64 list option;
     m_metadata_ext_type: rda_type;
     m_data_ext_type: rda_type;
     m_bandwidth: int32;
@@ -135,8 +136,14 @@ let ctrl_prog_deregister connection ~shutdown = castle_ctrl_prog_deregister conn
 let merge_start connection ~merge_cfg =
     let arrays = Array.of_list merge_cfg.m_arrays in
     let arrays_length = Int32.of_int (Array.length arrays) in
-    let data_exts = Array.of_list merge_cfg.m_data_exts in
-    let data_exts_length = Int32.of_int (Array.length data_exts) in
+    let data_exts, data_exts_length = match merge_cfg.m_data_exts with
+        | Some l ->
+            let arr = Array.of_list l in
+            arr, Int32.of_int (Array.length arr)
+        | None ->
+            (* -1 for nr_data_exts means 'all'. *)
+            [||], -1l
+    in
     castle_merge_start
         connection
         arrays_length

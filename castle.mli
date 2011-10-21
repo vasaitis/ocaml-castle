@@ -11,7 +11,7 @@ type rda_type =
   | NR_RDA_SPECS
 type merge_cfg = {
   m_arrays : int32 list;
-  m_data_exts : int64 list;
+  m_data_exts : int64 list option;
   m_metadata_ext_type : rda_type;
   m_data_ext_type : rda_type;
   m_bandwidth : int32;

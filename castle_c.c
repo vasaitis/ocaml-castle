@@ -860,9 +860,12 @@ caml_castle_merge_start(
         merge_cfg.arrays[i] = Int32_val(Field(arrays, i));
     /* Copy OCaml Int64 array -> C array */
     merge_cfg.nr_data_exts = Int32_val(data_exts_length);
-    merge_cfg.data_exts = malloc(sizeof(merge_cfg.data_exts[0]) * merge_cfg.nr_data_exts);
-    for (int i = 0; i < merge_cfg.nr_data_exts; i++)
-        merge_cfg.data_exts[i] = Int64_val(Field(data_exts, i));
+    if (merge_cfg.nr_data_exts != MERGE_ALL_DATA_EXTS)
+    {
+        merge_cfg.data_exts = malloc(sizeof(merge_cfg.data_exts[0]) * merge_cfg.nr_data_exts);
+        for (int i = 0; i < merge_cfg.nr_data_exts; i++)
+            merge_cfg.data_exts[i] = Int64_val(Field(data_exts, i));
+    }
     /* Other bits */
     merge_cfg.metadata_ext_type = Int_val(metadata_ext_type);
     merge_cfg.data_ext_type = Int_val(data_ext_type);
