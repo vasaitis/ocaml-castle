@@ -106,7 +106,7 @@ let get_slice connection c start finish limit = Array.map (fun (k,v) -> (k, Valu
  * Things not implemented by new interface 
  *****************************************)
 
-let nimsg = "Not implemented in new interface but will be Soon (HW)"
+let nimsg = "Not implemented in new interface but will be Soon™"
 let multi_replace connection c kvps = failwith nimsg
 let iter_replace_last connection t i v = failwith nimsg
 
