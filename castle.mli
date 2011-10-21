@@ -1,4 +1,21 @@
 type connection
+type rda_type =
+  | RDA_1
+  | RDA_2
+  | SSD_RDA_2
+  | SSD_RDA_3
+  | META_EXT
+  | MICRO_EXT
+  | SUPER_EXT
+  | SSD_ONLY_EXT
+  | NR_RDA_SPECS
+type merge_cfg = {
+  m_arrays : int32 list;
+  m_data_exts : int64 list;
+  m_metadata_ext_type : rda_type;
+  m_data_ext_type : rda_type;
+  m_bandwidth : int32;
+}
 val connect : unit -> connection
 val disconnect : connection -> unit
 val connection_fd : connection -> Unix.file_descr
@@ -58,3 +75,4 @@ val slave_evacuate : connection -> disk:int32 -> force:int32 -> unit
 val slave_scan : connection -> id:int32 -> unit
 val thread_priority : connection -> nice_value:int32 -> unit
 val ctrl_prog_deregister : connection -> shutdown:bool -> int32
+val merge_start : connection -> merge_cfg:merge_cfg -> int32

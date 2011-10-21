@@ -833,6 +833,54 @@ caml_castle_environment_set(value connection, value val_id, value data_v) {
 }
 
 CAMLprim value
+caml_castle_merge_start(
+        value connection,
+        value arrays_length,
+        value arrays,
+        value data_exts_length,
+        value data_exts,
+        value metadata_ext_type,
+        value data_ext_type,
+        value bandwidth)
+{
+    CAMLparam5(connection, arrays_length, arrays, data_exts_length, data_exts);
+    CAMLxparam3(metadata_ext_type, data_ext_type, bandwidth);
+    CAMLlocal1(result);
+
+    castle_connection *conn;
+    assert(Is_block(connection) && Tag_val(connection) == Custom_tag);
+    conn = Castle_val(connection);
+
+    /* Now pack the params into a C merge_cfg */
+    c_merge_cfg_t merge_cfg;
+    /* Copy OCaml Int32 array -> C array */
+    merge_cfg.nr_arrays = Int32_val(arrays_length);
+    merge_cfg.arrays = malloc(sizeof(merge_cfg.arrays[0]) * merge_cfg.nr_arrays);
+    for (int i = 0; i < merge_cfg.nr_arrays; i++)
+        merge_cfg.arrays[i] = Int32_val(Field(arrays, i));
+    /* Copy OCaml Int64 array -> C array */
+    merge_cfg.nr_data_exts = Int32_val(data_exts_length);
+    merge_cfg.data_exts = malloc(sizeof(merge_cfg.data_exts[0]) * merge_cfg.nr_data_exts);
+    for (int i = 0; i < merge_cfg.nr_data_exts; i++)
+        merge_cfg.data_exts[i] = Int64_val(Field(data_exts, i));
+    /* Other bits */
+    merge_cfg.metadata_ext_type = Int_val(metadata_ext_type);
+    merge_cfg.data_ext_type = Int_val(data_ext_type);
+    merge_cfg.bandwidth = Int32_val(bandwidth);
+
+    enter_blocking_section();
+    c_merge_id_t merge_id;
+    int ret = castle_merge_start(conn, merge_cfg, &merge_id);
+    leave_blocking_section();
+
+    if (ret)
+        unix_error(-ret, "merge_start", Nothing);
+
+    result = caml_copy_int32(merge_id);
+    CAMLreturn(result);
+}
+
+CAMLprim value
 caml_castle_fd(value connection) {
   CAMLparam1(connection);
   castle_connection *conn;

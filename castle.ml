@@ -3,6 +3,26 @@ open Unix
 open FSTypes2
 
 type connection
+
+type rda_type =
+    | RDA_1
+    | RDA_2
+    | SSD_RDA_2
+    | SSD_RDA_3
+    | META_EXT
+    | MICRO_EXT
+    | SUPER_EXT
+    | SSD_ONLY_EXT
+    | NR_RDA_SPECS
+
+type merge_cfg = {
+    m_arrays: int32 list;
+    m_data_exts: int64 list;
+    m_metadata_ext_type: rda_type;
+    m_data_ext_type: rda_type;
+    m_bandwidth: int32;
+}
+
 external castle_connect : unit -> connection = "caml_castle_connect"
 external castle_disconnect : connection -> unit = "caml_castle_disconnect"
 
@@ -41,6 +61,11 @@ external castle_slave_evacuate                  : connection -> int32 -> int32 -
 external castle_slave_scan                      : connection -> int32 -> unit = "caml_castle_slave_scan"
 external castle_thread_priority                 : connection -> int32 -> unit = "caml_castle_thread_priority"
 external castle_ctrl_prog_deregister            : connection -> bool -> int32 = "caml_castle_ctrl_prog_deregister"
+(* NB additional function name is necessary since function has more than 5 params.
+   Yes you read that right. See http://caml.inria.fr/pub/docs/manual-ocaml/manual032.html#htoc218.
+   This also means ocaml-castle won't work with bytecode-interpreted OCaml programs
+   until someone implements bytecode_bullshit in the C part. *)
+external castle_merge_start                     : connection -> int32 -> int32 array -> int32 -> int64 array -> rda_type -> rda_type -> int32 -> int32 = "bytecode_bullshit" "caml_castle_merge_start"
 
 let connect () =
         castle_connect ()
@@ -108,6 +133,23 @@ let slave_evacuate connection ~(disk:int32) ~(force:int32) = castle_slave_evacua
 let slave_scan    connection ~id = castle_slave_scan connection id
 let thread_priority  connection ~nice_value = castle_thread_priority connection nice_value
 let ctrl_prog_deregister connection ~shutdown = castle_ctrl_prog_deregister connection shutdown
+
+(* Here we unpack the OCaml values to make the C side of this function easier,
+   and later construct the merge_cfg structure in C. *)
+let merge_start connection ~merge_cfg =
+    let arrays = Array.of_list merge_cfg.m_arrays in
+    let arrays_length = Int32.of_int (Array.length arrays) in
+    let data_exts = Array.of_list merge_cfg.m_data_exts in
+    let data_exts_length = Int32.of_int (Array.length data_exts) in
+    castle_merge_start
+        connection
+        arrays_length
+        arrays
+        data_exts_length
+        data_exts
+        merge_cfg.m_metadata_ext_type
+        merge_cfg.m_data_ext_type
+        merge_cfg.m_bandwidth
 
 (* Create a child version of the given one, and return the new version id. *)
 let clone connection ~(version:int32) = castle_clone connection version
