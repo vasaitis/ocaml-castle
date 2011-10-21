@@ -19,7 +19,7 @@ LIBINSTALL_FILES = \
 
 OCAMLFLAGS=-g -w Aez -warn-error Aez
 OCAMLLDFLAGS=-g
-CFLAGS = -Wall -Werror -g -ggdb -O2 $(RPM_OPT_FLAGS) -D_FORTIFY_SOURCE=2
+CFLAGS = -Wall -Werror -g -ggdb -O2 $(RPM_OPT_FLAGS) -D_FORTIFY_SOURCE=2 -std=gnu99
 
 # XXX: This is in order to install the lib into the correct /tmp dir when
 # rpmbuild-ing. This might be broken now, test and fix(?)
