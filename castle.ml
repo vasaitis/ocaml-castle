@@ -62,6 +62,8 @@ external castle_slave_evacuate                  : connection -> int32 -> int32 -
 external castle_slave_scan                      : connection -> int32 -> unit = "caml_castle_slave_scan"
 external castle_thread_priority                 : connection -> int32 -> unit = "caml_castle_thread_priority"
 external castle_ctrl_prog_deregister            : connection -> bool -> int32 = "caml_castle_ctrl_prog_deregister"
+external castle_create_with_opts                : connection -> int64 -> int64 -> int32 = "caml_castle_create_with_opts"
+external castle_vertree_tdp_set                 : connection -> int32 -> int64 -> unit = "caml_castle_vertree_compact"
 (* NB additional function name is necessary since function has more than 5 params.
    Yes you read that right. See http://caml.inria.fr/pub/docs/manual-ocaml/manual032.html#htoc218.
    This also means ocaml-castle won't work with bytecode-interpreted OCaml programs
@@ -120,6 +122,7 @@ let detach connection ~(device:int32) = castle_detach connection device
 let detach_dev connection ~(device:string) = castle_detach connection (castle_device_to_devno device)
 
 let create connection ~size = castle_create connection size
+let create_with_opts connection ~size ~opts = castle_create_with_opts connection size opts
 
 let destroy_vertree connection ~vertree = castle_destroy_vertree connection vertree
 let vertree_compact connection ~vertree = castle_vertree_compact connection vertree
@@ -130,6 +133,7 @@ let slave_evacuate connection ~(disk:int32) ~(force:int32) = castle_slave_evacua
 let slave_scan    connection ~id = castle_slave_scan connection id
 let thread_priority  connection ~nice_value = castle_thread_priority connection nice_value
 let ctrl_prog_deregister connection ~shutdown = castle_ctrl_prog_deregister connection shutdown
+let vertree_tdp_set connection ~vertree ~seconds = castle_vertree_tdp_set connection vertree seconds
 
 (* Here we unpack the OCaml values to make the C side of this function easier,
    and later construct the merge_cfg structure in C. *)

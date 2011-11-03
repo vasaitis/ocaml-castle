@@ -55,6 +55,7 @@ val attach_dev : connection -> version:FSTypes2.version_id -> string
 val detach : connection -> device:int32 -> unit
 val detach_dev : connection -> device:string -> unit
 val create : connection -> size:int64 -> int32
+val create_with_opts : connection -> size:int64 -> opts:int64 -> int32
 val destroy_vertree : connection -> vertree:int32 -> unit
 val vertree_compact : connection -> vertree:int32 -> unit
 val delete_version : connection -> version:int32 -> unit
@@ -75,3 +76,4 @@ val slave_scan : connection -> id:int32 -> unit
 val thread_priority : connection -> nice_value:int32 -> unit
 val ctrl_prog_deregister : connection -> shutdown:bool -> int32
 val merge_start : connection -> merge_cfg:merge_cfg -> int32
+val vertree_tdp_set : connection -> vertree:int32 -> seconds:int64 -> unit

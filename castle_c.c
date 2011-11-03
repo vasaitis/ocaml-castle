@@ -566,6 +566,7 @@ CAMLprim value caml_castle_get_slice(value connection, value collection, value f
 #define CAML_VAL_work_id_t Int32_val
 #define CAML_VAL_work_size_t Int64_val
 #define CAML_VAL_pid Int32_val
+#define CAML_VAL_c_da_opts_t Int64_val
 
 #define CAML_COPY_slave_uuid caml_copy_int32
 #define CAML_COPY_collection_id caml_copy_int32
