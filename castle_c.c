@@ -203,7 +203,8 @@ CAMLprim value caml_castle_get(value connection, value collection, value key_val
                 unix_error(-ret, "get", Nothing);
         }
 
-        CAMLreturn(Val_unit); // If my assumptions are correct, we should never get here.
+        /* Should be unreachable. */
+        abort();
     }
 
     if (val_len == 0)
