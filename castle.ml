@@ -81,6 +81,8 @@ let connection_fd conn = castle_fd conn
 exception Invalid_reply of string
 exception Invalid_iterator
 
+let _ = Callback.register_exception "Not_found" Not_found
+
 (* Data Path *)
 
 let get conn c k = 

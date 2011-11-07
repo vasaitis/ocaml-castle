@@ -158,7 +158,7 @@ CAMLprim void caml_castle_disconnect(value connection)
 CAMLprim value caml_castle_get(value connection, value collection, value key_value)
 {
     CAMLparam3(connection, collection, key_value);
-    CAMLlocal1(result);
+    CAMLlocal2(result, not_found);
 
     int ret;
     uint32_t key_len, val_len, collection_id;
@@ -189,7 +189,14 @@ CAMLprim value caml_castle_get(value connection, value collection, value key_val
         switch (ret)
         {
             case -ENOENT:
-                caml_raise_constant(*caml_named_value("acunuClientLib2 Not_found"));
+            {
+                value *p_not_found = caml_named_value("Not_found");
+                if (p_not_found)
+                {
+                    not_found = *p_not_found;
+                    caml_raise_constant(not_found);
+                }
+            }
 
             default:
                 debug("Got error %d - '%s'", ret, strerror(ret));
