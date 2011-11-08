@@ -1,0 +1,20 @@
+syntax: regexp
+.hgignore
+.DS_Store
+._$
+.*\#$
+~$
+^._d/
+/\._
+\.a$
+\.annot$
+\.cma$
+\.cmi$
+\.cmo$
+\.cmx$
+\.cmxa$
+\.nfs.*$
+\.o$
+\.orig$
+\.rej$
+\.swp$
