@@ -123,8 +123,7 @@ let attach_dev connection ~version = castle_devno_to_device(attach connection ~v
 let detach connection ~(device:int32) = castle_detach connection device
 let detach_dev connection ~(device:string) = castle_detach connection (castle_device_to_devno device)
 
-(* Disgusting HACK! See trac-3600. *)
-let create connection ~size = castle_create_with_opts connection size 1L
+let create connection ~size = castle_create connection size
 let create_with_opts connection ~size ~opts = castle_create_with_opts connection size opts
 
 let destroy_vertree connection ~vertree = castle_destroy_vertree connection vertree
