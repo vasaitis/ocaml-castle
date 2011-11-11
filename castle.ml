@@ -24,6 +24,11 @@ type merge_cfg = {
     m_bandwidth: int32;
 }
 
+exception Invalid_reply of string
+exception Invalid_iterator
+exception Castle_not_running
+let _ = Callback.register_exception "Not_found" Not_found
+
 external castle_connect : unit -> connection = "caml_castle_connect"
 external castle_disconnect : connection -> unit = "caml_castle_disconnect"
 
@@ -71,17 +76,15 @@ external castle_vertree_tdp_set                 : connection -> int32 -> int64 -
 external castle_merge_start                     : connection -> int32 -> int32 array -> int32 -> int64 array -> rda_type -> rda_type -> int32 -> int32 = "bytecode_bullshit" "caml_castle_merge_start"
 
 let connect () =
+    try
         castle_connect ()
+    with Unix_error (ENOENT, _, _) ->
+        raise Castle_not_running
 
 let disconnect connection = 
         castle_disconnect connection
 
 let connection_fd conn = castle_fd conn
-
-exception Invalid_reply of string
-exception Invalid_iterator
-
-let _ = Callback.register_exception "Not_found" Not_found
 
 (* Data Path *)
 
