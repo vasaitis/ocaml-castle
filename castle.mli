@@ -21,6 +21,7 @@ val disconnect : connection -> unit
 val connection_fd : connection -> Unix.file_descr
 exception Invalid_reply of string
 exception Invalid_iterator
+exception Castle_not_running
 val get :
   connection -> FSTypes2.collection_id -> FSTypes2.obj_key -> FSTypes2.obj_value
 val get_slice :
