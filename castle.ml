@@ -69,6 +69,8 @@ external castle_thread_priority                 : connection -> int32 -> unit = 
 external castle_ctrl_prog_deregister            : connection -> bool -> int32 = "caml_castle_ctrl_prog_deregister"
 external castle_create_with_opts                : connection -> int64 -> int64 -> int32 = "caml_castle_create_with_opts"
 external castle_vertree_tdp_set                 : connection -> int32 -> int64 -> unit = "caml_castle_vertree_compact"
+external castle_state_query 					: connection -> int32 = "caml_castle_state_query"
+
 (* NB additional function name is necessary since function has more than 5 params.
    Yes you read that right. See http://caml.inria.fr/pub/docs/manual-ocaml/manual032.html#htoc218.
    This also means ocaml-castle won't work with bytecode-interpreted OCaml programs
@@ -139,6 +141,8 @@ let slave_scan    connection ~id = castle_slave_scan connection id
 let thread_priority  connection ~nice_value = castle_thread_priority connection nice_value
 let ctrl_prog_deregister connection ~shutdown = castle_ctrl_prog_deregister connection shutdown
 let vertree_tdp_set connection ~vertree ~seconds = castle_vertree_tdp_set connection vertree seconds
+
+let state_query connection = castle_state_query connection
 
 (* Here we unpack the OCaml values to make the C side of this function easier,
    and later construct the merge_cfg structure in C. *)

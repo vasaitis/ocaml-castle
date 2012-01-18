@@ -78,3 +78,4 @@ val thread_priority : connection -> nice_value:int32 -> unit
 val ctrl_prog_deregister : connection -> shutdown:bool -> int32
 val merge_start : connection -> merge_cfg:merge_cfg -> int32
 val vertree_tdp_set : connection -> vertree:int32 -> seconds:int64 -> unit
+val state_query : connection -> int32
