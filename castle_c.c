@@ -575,6 +575,7 @@ CAMLprim value caml_castle_get_slice(value connection, value collection, value f
 #define CAML_VAL_work_size_t Int64_val
 #define CAML_VAL_pid Int32_val
 #define CAML_VAL_c_da_opts_t Int64_val
+#define CAML_VAL_c_state_t Int32_val
 
 #define CAML_COPY_slave_uuid caml_copy_int32
 #define CAML_COPY_collection_id caml_copy_int32
@@ -588,6 +589,7 @@ CAMLprim value caml_castle_get_slice(value connection, value collection, value f
 #define CAML_COPY_work_id_t caml_copy_int32
 #define CAML_COPY_work_size_t caml_copy_int64
 #define CAML_COPY_pid caml_copy_int32
+#define CAML_COPY_c_state_t caml_copy_int32
 
 #define CASTLE_IOCTL_0IN_0OUT(_id, _name)                                           \
 CAMLprim void                                                                       \
