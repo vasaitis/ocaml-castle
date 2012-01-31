@@ -39,8 +39,8 @@ external castle_fd : connection -> file_descr = "caml_castle_fd"
 
 (* Data path *)
 external castle_get : connection -> int32 -> string array -> string = "caml_castle_get"
-external castle_replace : connection -> int32 -> string array -> string -> unit = "caml_castle_replace"
-external castle_remove : connection -> int32 -> string array -> unit = "caml_castle_remove"
+external castle_replace : connection -> int32 -> ?timestamp:int64 -> string array -> string -> unit = "caml_castle_replace"
+external castle_remove : connection -> int32 -> ?timestamp:int64 -> string array -> unit = "caml_castle_remove"
 external castle_iter_start : connection -> int32 -> string array -> string array -> int -> int32 * bool * ((string array * string) array) = "caml_castle_iter_start"
 external castle_iter_next : connection -> int32 -> int -> bool * ((string array * string) array) = "caml_castle_iter_next"
 external castle_iter_finish : connection -> int32 -> unit = "caml_castle_iter_finish"
@@ -94,9 +94,9 @@ let get conn c k =
         try Value (castle_get conn c k)
         with Not_found -> Tombstone 
 
-let remove conn c k = castle_remove conn c k
+let remove conn c ?timestamp k = castle_remove conn c ?timestamp k
 
-let replace conn c k v = castle_replace conn c k v
+let replace conn c ?timestamp k v = castle_replace conn c ?timestamp k v
 
 let iter_start connection c start finish batch_size = 
 	let token, more, arr = castle_iter_start connection c start finish batch_size in

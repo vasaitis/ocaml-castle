@@ -30,10 +30,10 @@ val get_slice :
   FSTypes2.obj_key ->
   FSTypes2.obj_key -> int -> (FSTypes2.obj_key * FSTypes2.obj_value) array
 val replace :
-  connection -> FSTypes2.collection_id -> FSTypes2.obj_key -> string -> unit
+  connection -> FSTypes2.collection_id -> ?timestamp:int64 -> FSTypes2.obj_key -> string -> unit
 val multi_replace :
   connection -> FSTypes2.collection_id -> (FSTypes2.obj_key * string) array -> unit
-val remove : connection -> FSTypes2.collection_id -> FSTypes2.obj_key -> unit
+val remove : connection -> FSTypes2.collection_id -> ?timestamp:int64 -> FSTypes2.obj_key -> unit
 val iter_start :
   connection ->
   FSTypes2.collection_id ->
