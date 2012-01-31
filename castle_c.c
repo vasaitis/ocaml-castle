@@ -220,12 +220,16 @@ CAMLprim value caml_castle_get(value connection, value collection, value key_val
     CAMLreturn(result);
 }
 
-CAMLprim void caml_castle_replace(value connection, value collection, value key_value, value val_value)
+#define Val_none Val_int(0)
+#define Some_val(v) Field(v,0)
+
+CAMLprim void caml_castle_replace(value connection, value collection, value timestamp, value key_value, value val_value)
 {
-    CAMLparam4(connection, collection, key_value, val_value);
+    CAMLparam5(connection, collection, timestamp, key_value, val_value);
 
     int ret;
     uint32_t key_len, val_len, collection_id;
+    uint64_t u_ts;
     castle_connection *conn;
     castle_key *key;
     void *buf;
@@ -237,6 +241,7 @@ CAMLprim void caml_castle_replace(value connection, value collection, value key_
     conn = Castle_val(connection);
 
     collection_id = Int32_val(collection);
+    u_ts = timestamp != Val_none ? Int64_val(Some_val(timestamp)) : 0;
 
     get_key_length(key_value, &key_len);
     val_len = caml_string_length(val_value);
@@ -254,7 +259,11 @@ CAMLprim void caml_castle_replace(value connection, value collection, value key_
     memcpy(val, String_val(val_value), val_len);
 
     enter_blocking_section();
-    ret = castle_replace(conn, collection_id, key, val, val_len);
+    if (timestamp == Val_none) {
+        ret = castle_replace(conn, collection_id, key, val, val_len);
+    } else {
+        ret = castle_timestamped_replace(conn, collection_id, key, val, val_len, u_ts);
+    }
     leave_blocking_section();
     free(buf);
     if (ret)
@@ -266,12 +275,13 @@ CAMLprim void caml_castle_replace(value connection, value collection, value key_
     CAMLreturn0;
 }
 
-CAMLprim void caml_castle_remove(value connection, value collection, value key_value)
+CAMLprim void caml_castle_remove(value connection, value collection, value timestamp, value key_value)
 {
-    CAMLparam3(connection, collection, key_value);
+    CAMLparam4(connection, collection, timestamp, key_value);
 
     int ret;
     uint32_t key_len, collection_id;
+    uint64_t u_ts;
     castle_connection *conn;
     castle_key *key;
 
@@ -281,6 +291,7 @@ CAMLprim void caml_castle_remove(value connection, value collection, value key_v
     conn = Castle_val(connection);
 
     collection_id = Int32_val(collection);
+    u_ts = timestamp != Val_none ? Int64_val(Some_val(timestamp)) : 0;
 
     get_key_length(key_value, &key_len);
 
@@ -294,7 +305,11 @@ CAMLprim void caml_castle_remove(value connection, value collection, value key_v
     copy_ocaml_key_to_buffer(key_value, key, key_len, EMPTY_MEANS_EMPTY);
 
     enter_blocking_section();
-    ret = castle_remove(conn, collection_id, key);
+    if (timestamp == Val_none) {
+        ret = castle_remove(conn, collection_id, key);
+    } else {
+        ret = castle_timestamped_remove(conn, collection_id, key, u_ts);
+    }
     leave_blocking_section();
     free(key);
     if (ret)
