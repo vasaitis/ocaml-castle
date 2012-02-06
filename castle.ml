@@ -15,6 +15,16 @@ type rda_type =
     | SSD_ONLY_EXT
     | NR_RDA_SPECS
 
+type castle_state =
+    | CASTLE_STATE_LOADING
+    | CASTLE_STATE_UNINITED
+    | CASTLE_STATE_INITED
+
+let string_of_castle_state = function
+    | CASTLE_STATE_LOADING -> "CASTLE_STATE_LOADING"
+    | CASTLE_STATE_UNINITED -> "CASTLE_STATE_UNINITED"
+    | CASTLE_STATE_INITED -> "CASTLE_STATE_INITED"
+
 type merge_cfg = {
     m_arrays: int32 list;
     (* 'None' means merge all data extents (i.e. we pass -1 to Castle). *)
@@ -69,7 +79,7 @@ external castle_thread_priority                 : connection -> int32 -> unit = 
 external castle_ctrl_prog_deregister            : connection -> bool -> int32 = "caml_castle_ctrl_prog_deregister"
 external castle_create_with_opts                : connection -> int64 -> int64 -> int32 = "caml_castle_create_with_opts"
 external castle_vertree_tdp_set                 : connection -> int32 -> int64 -> unit = "caml_castle_vertree_compact"
-external castle_state_query 					: connection -> int32 = "caml_castle_state_query"
+external castle_state_query                     : connection -> int32 = "caml_castle_state_query"
 
 (* NB additional function name is necessary since function has more than 5 params.
    Yes you read that right. See http://caml.inria.fr/pub/docs/manual-ocaml/manual032.html#htoc218.
@@ -142,7 +152,12 @@ let thread_priority  connection ~nice_value = castle_thread_priority connection 
 let ctrl_prog_deregister connection ~shutdown = castle_ctrl_prog_deregister connection shutdown
 let vertree_tdp_set connection ~vertree ~seconds = castle_vertree_tdp_set connection vertree seconds
 
-let state_query connection = castle_state_query connection
+let state_query connection =
+    match castle_state_query connection with
+        | 0l -> CASTLE_STATE_LOADING
+        | 1l -> CASTLE_STATE_UNINITED
+        | 2l -> CASTLE_STATE_INITED
+        | x -> failwith (sprintf "Unknown CASTLE_STATE_ code %ld" x)
 
 (* Here we unpack the OCaml values to make the C side of this function easier,
    and later construct the merge_cfg structure in C. *)
