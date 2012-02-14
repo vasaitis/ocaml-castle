@@ -17,6 +17,7 @@ val string_of_castle_state :
   castle_state ->
   string
 type merge_cfg = {
+  m_vertree : int32;
   m_arrays : int32 list;
   m_data_exts : int64 list option;
   m_metadata_ext_type : rda_type;

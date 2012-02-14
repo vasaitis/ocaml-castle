@@ -861,6 +861,7 @@ caml_castle_environment_set(value connection, value val_id, value data_v) {
 CAMLprim value
 caml_castle_merge_start(
         value connection,
+        value vertree,
         value arrays_length,
         value arrays,
         value data_exts_length,
@@ -879,6 +880,7 @@ caml_castle_merge_start(
 
     /* Now pack the params into a C merge_cfg */
     c_merge_cfg_t merge_cfg;
+    merge_cfg.vertree = Int32_val(vertree);
     /* Copy OCaml Int32 array -> C array */
     merge_cfg.nr_arrays = Int32_val(arrays_length);
     merge_cfg.arrays = malloc(sizeof(merge_cfg.arrays[0]) * merge_cfg.nr_arrays);

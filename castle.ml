@@ -26,6 +26,7 @@ let string_of_castle_state = function
     | CASTLE_STATE_INITED -> "CASTLE_STATE_INITED"
 
 type merge_cfg = {
+    m_vertree: int32;
     m_arrays: int32 list;
     (* 'None' means merge all data extents (i.e. we pass -1 to Castle). *)
     m_data_exts: int64 list option;
@@ -85,7 +86,7 @@ external castle_state_query                     : connection -> int32 = "caml_ca
    Yes you read that right. See http://caml.inria.fr/pub/docs/manual-ocaml/manual032.html#htoc218.
    This also means ocaml-castle won't work with bytecode-interpreted OCaml programs
    until someone implements bytecode_bullshit in the C part. *)
-external castle_merge_start                     : connection -> int32 -> int32 array -> int32 -> int64 array -> rda_type -> rda_type -> int32 -> int32 = "bytecode_bullshit" "caml_castle_merge_start"
+external castle_merge_start                     : connection -> int32 -> int32 -> int32 array -> int32 -> int64 array -> rda_type -> rda_type -> int32 -> int32 = "bytecode_bullshit" "caml_castle_merge_start"
 
 let connect () =
     try
@@ -174,6 +175,7 @@ let merge_start connection ~merge_cfg =
     in
     castle_merge_start
         connection
+        merge_cfg.m_vertree
         arrays_length
         arrays
         data_exts_length
